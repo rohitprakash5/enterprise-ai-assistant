@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Rohit",
+        "experience": 20,
+        "tool": "Informatica"
+    },
+    {
+        "name": "Amit",
+        "experience": 10,
+        "tool": "Snowflake"
+    },
+    {
+        "name": "Priya",
+        "experience": 5,
+        "tool": "Databricks"
+    }
+]
