@@ -1,5 +1,0 @@
-git status
-git add .
-git status
-git commit -m "Refactor FastAPI app into models services and routes"
-git push

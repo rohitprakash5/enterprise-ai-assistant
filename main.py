@@ -6,15 +6,11 @@ from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi import status
 
-from models import Employee
-from models import EmployeeUpdate
+import models
 
-from services import (
-    get_employee_data,
-    save_employee,
-    update_employee_service,
-    delete_employee_service
-)
+from llm_service import ask_llm
+
+import services
 
 app = FastAPI()
 
@@ -30,14 +26,14 @@ def read_root():
 @app.get("/employees")
 def read_employees():
 
-    return get_employee_data()
+    return services.get_employee_data()
 
 
 @app.get("/employees/count")
 def count_employees():
 
     return {
-        "count": len(get_employee_data())
+        "count": len(services.get_employee_data())
     }
 
 
@@ -46,7 +42,7 @@ def filter_employees(
     min_experience: Optional[int] = None
 ):
 
-    employees = get_employee_data()
+    employees = services.get_employee_data()
 
     if min_experience is None:
         return employees
@@ -61,7 +57,7 @@ def filter_employees(
 @app.get("/employees/search/{name}")
 def search_employee(name: str):
 
-    for emp in get_employee_data():
+    for emp in services.get_employee_data():
 
         if emp["name"].lower() == name.lower():
             return emp
@@ -75,7 +71,7 @@ def search_employee(name: str):
 @app.get("/employees/{employee_id}")
 def get_employee(employee_id: int):
 
-    for emp in get_employee_data():
+    for emp in services.get_employee_data():
 
         if emp["id"] == employee_id:
             return emp
@@ -87,18 +83,18 @@ def get_employee(employee_id: int):
 
 
 @app.post("/employees")
-def create_employee(employee: Employee):
+def create_employee(employee: models.Employee):
 
-    return save_employee(employee)
+    return services.save_employee(employee)
 
 
 @app.put("/employees/{employee_id}")
 def update_employee(
     employee_id: int,
-    employee_update: EmployeeUpdate
+    employee_update: models.EmployeeUpdate
 ):
 
-    return update_employee_service(
+    return services.update_employee_service(
         employee_id,
         employee_update
     )
@@ -107,6 +103,22 @@ def update_employee(
 @app.delete("/employees/{employee_id}")
 def delete_employee(employee_id: int):
 
-    return delete_employee_service(
+    return services.delete_employee_service(
         employee_id
     )
+
+@app.get("/external-users")
+def get_external_users():
+    return services.get_external_users()
+
+
+@app.post("/ask")
+
+def ask_gpt(request: models.QuestionRequest):
+
+    answer = ask_llm(request.question)
+
+    return {
+        "question": request.question,
+        "answer": answer
+    }

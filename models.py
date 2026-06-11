@@ -13,3 +13,7 @@ class Employee(BaseModel):
 class EmployeeUpdate(BaseModel):
     name: Optional[str] = None
     experience: Optional[int] = None
+
+
+class QuestionRequest(BaseModel):
+    question: str

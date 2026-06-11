@@ -1,6 +1,8 @@
 # services.py
 
 import csv
+from urllib import response
+import requests
 from fastapi import HTTPException, status
 
 
@@ -121,3 +123,25 @@ def delete_employee_service(employee_id):
         status_code=status.HTTP_404_NOT_FOUND,
         detail="Employee not found"
     )
+
+def get_external_users():
+    try:
+        response = requests.get("https://jsonplaceholder.typicode.com/users")
+        response.raise_for_status()
+        #return response.json()
+        users = response.json()
+        transformed_users = []
+        
+        for user in users:
+            transformed_users.append({
+                "id": user["id"],
+                "name": user["name"],
+                "email": user["email"],
+                "company": user["company"]["name"]
+            })
+        return transformed_users
+    except requests.RequestException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"External service error: {str(exc)}"
+        )
