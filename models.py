@@ -17,3 +17,6 @@ class EmployeeUpdate(BaseModel):
 
 class QuestionRequest(BaseModel):
     question: str
+
+class AdvisorRequest(BaseModel):
+    question: str    
