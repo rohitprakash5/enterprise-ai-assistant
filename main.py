@@ -8,8 +8,7 @@ from fastapi import status
 
 import models
 
-from llm_service import ask_llm
-from llm_service import employee_advisor
+import llm_service
 
 import services
 
@@ -115,7 +114,7 @@ def get_external_users():
 
 @app.post("/ask")
 def ask_gpt(request: models.QuestionRequest):
-    answer = ask_llm(request.question)
+    answer = llm_service.ask_llm(request.question)
     return {
         "question": request.question,
         "answer": answer
@@ -123,7 +122,15 @@ def ask_gpt(request: models.QuestionRequest):
 
 @app.post("/advisor")
 def get_advice(request: models.AdvisorRequest):
-    answer = employee_advisor(request.question)
+    answer = llm_service.employee_advisor(request.question)
+    return {
+        "question": request.question,
+        "answer": answer
+    }
+
+@app.post("/employee-agent")
+def ask_employee_agent(request: models.AdvisorRequest):
+    answer = llm_service.employee_agent(request.question)
     return {
         "question": request.question,
         "answer": answer

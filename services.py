@@ -145,3 +145,49 @@ def get_external_users():
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"External service error: {str(exc)}"
         )
+
+
+def count_employees():
+    employees = get_employee_data()
+    tools = [
+    {
+        "type": "function",
+        "name": "count_employees",
+        "description": "Returns total number of employees"
+    }
+    ]
+    return len(employees)
+
+def get_senior_employee_count():
+    employees = get_employee_data()
+    seniors = [emp for emp in employees
+        if emp["experience"] >= 10
+    ]
+    return len(seniors)
+    
+
+def get_most_experienced_employee():
+    employees = get_employee_data()
+    return max(
+        employees,
+        key=lambda x: x["experience"]
+    ) 
+#print(get_most_experienced_employee())
+
+def get_employee_names():
+    employees = get_employee_data()
+    return [
+        emp["name"]
+        for emp in employees
+    ]
+
+#print(get_employee_names())
+
+def get_average_experience():
+    employees = get_employee_data()
+    total = sum(
+        emp["experience"]
+        for emp in employees
+    )
+    return round(total / len(employees), 2 )
+#print(get_average_experience())
