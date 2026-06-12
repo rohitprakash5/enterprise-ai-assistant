@@ -72,7 +72,12 @@ tools = [
         "type": "function",
         "name": "get_average_experience",
         "description": "Returns the average experience of all employees"
-    }
+    },
+    {
+    "type": "function",
+    "name": "workforce_summary",
+    "description": "Returns a workforce summary including employee count, average experience and most experienced employee"
+}
 ]
 
 
@@ -94,4 +99,15 @@ def employee_agent_v2(question: str):
     if tool_call.name == "get_average_experience":
         avg = services.get_average_experience()
         return f"Average experience is {avg} years."
+    if tool_call.name == "workforce_summary":
+        summary = services.workforce_summary()
+        return (
+        f"Total Employees: {summary['total']}, "
+        f"Average Experience: {summary['average']} years, "
+        f"Most Experienced Employee: "
+        f"{summary['top_employee']} "
+        f"({summary['top_experience']} years)"
+        )
     return "No tool matched"
+
+

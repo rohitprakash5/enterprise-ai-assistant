@@ -184,3 +184,14 @@ def get_average_experience():
     )
     return round(total / len(employees), 2 )
 #print(get_average_experience())
+
+def workforce_summary():
+    total = count_employees()
+    average = get_average_experience()
+    top_employee = get_most_experienced_employee()
+    return{
+        "total": total,
+        "average": average,
+        "top_employee": top_employee["name"],
+        "top_experience": top_employee["experience"]
+    }
