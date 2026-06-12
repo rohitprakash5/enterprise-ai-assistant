@@ -149,13 +149,6 @@ def get_external_users():
 
 def count_employees():
     employees = get_employee_data()
-    tools = [
-    {
-        "type": "function",
-        "name": "count_employees",
-        "description": "Returns total number of employees"
-    }
-    ]
     return len(employees)
 
 def get_senior_employee_count():

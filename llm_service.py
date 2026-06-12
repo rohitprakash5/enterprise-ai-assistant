@@ -36,22 +36,6 @@ Answer the following question:
     response = client.responses.create(  model="gpt-5", input=prompt)
     return response.output_text
 
-#def employee_agent(question: str):
-    question_lower = question.lower()
-    if "how many senior employees" in question_lower:
-        result = services.get_senior_employee_count()
-        return f"There are {result} senior employees in the company."
-    if "how many" in question_lower and "employees" in question_lower:
-        result = services.count_employees()
-        return f"There are {result} employees in the company."
-    if "most experienced" in question_lower:
-        emp = services.get_most_experienced_employee()
-    return (
-        f"{emp['name']} is the most experienced "
-        f"employee with {emp['experience']} years."
-    )
-    return employee_advisor(question)
-
 def employee_agent(question: str):
     question_lower = question.lower()
     if "how many senior employees" in question_lower:
@@ -71,3 +55,43 @@ def employee_agent(question: str):
         )
     print("TOOL USED: GPT FALLBACK")
     return employee_advisor(question)    
+
+
+tools = [
+    {
+        "type": "function",
+        "name": "count_employees",
+        "description": "Returns total number of employees"
+    },
+    {
+        "type": "function",
+        "name": "get_employee_names",
+        "description": "Returns a list of all employee names"
+    },
+    {
+        "type": "function",
+        "name": "get_average_experience",
+        "description": "Returns the average experience of all employees"
+    }
+]
+
+
+def employee_agent_v2(question: str):
+    response = client.responses.create(
+        model="gpt-5",
+        input=question,
+        tools=tools
+    )
+    tool_call = response.output[1]
+    print("Tool selected:", tool_call.name)
+    print(tool_call.name)
+    if tool_call.name == "count_employees":
+       result = services.count_employees()
+       return f"There are {result} employees."
+    if tool_call.name == "get_employee_names":
+       names = services.get_employee_names()
+       return ", ".join(names)
+    if tool_call.name == "get_average_experience":
+        avg = services.get_average_experience()
+        return f"Average experience is {avg} years."
+    return "No tool matched"

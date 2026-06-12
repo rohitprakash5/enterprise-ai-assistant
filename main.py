@@ -135,3 +135,11 @@ def ask_employee_agent(request: models.AdvisorRequest):
         "question": request.question,
         "answer": answer
     }
+
+@app.post("/employee-agent-v2")
+def ask_employee_agent_v2(request: models.AdvisorRequest):
+    answer = llm_service.employee_agent_v2(request.question)
+    return {
+        "question": request.question,
+        "answer": answer
+    }
