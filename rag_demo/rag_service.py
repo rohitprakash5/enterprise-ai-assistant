@@ -10,7 +10,16 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
 chroma_client = chromadb.Client()
-collection = chroma_client.create_collection("hr_policy")
+#collection = chroma_client.create_collection("hr_policy")
+try:
+    collection = chroma_client.get_collection(
+        "hr_policy"
+    )
+except:
+    collection = chroma_client.create_collection(
+        "hr_policy"
+    )
+
 documents = [
     "Employees receive 12 casual leaves per year.",
     "Employees are eligible for medical insurance after 90 days.",
@@ -35,6 +44,13 @@ def ask_hr_policy(question):
         query_embeddings=[question_embedding],
         n_results=1
     )
+    #print(results)
+    print("\nRetrieved Context:")
+    print(results["documents"][0][0])
+
+    print("\nDistance:")
+    print(results["distances"][0][0])
+
     context = results["documents"][0][0]
 
       

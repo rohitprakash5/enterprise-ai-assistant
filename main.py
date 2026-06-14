@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi import status
 
+from rag_demo.rag_service import ask_hr_policy
+
 import models
 
 import llm_service
@@ -141,5 +143,13 @@ def ask_employee_agent_v2(request: models.AdvisorRequest):
     answer = llm_service.employee_agent_v2(request.question)
     return {
         "question": request.question,
+        "answer": answer
+    }
+
+@app.post("/ask-hr-policy")
+def ask_hr_policy_endpoint(question_request: models.HRQuestion):
+    answer = ask_hr_policy(question_request.question)
+    return {
+        "question": question_request.question,
         "answer": answer
     }

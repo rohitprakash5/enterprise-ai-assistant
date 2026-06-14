@@ -19,4 +19,7 @@ class QuestionRequest(BaseModel):
     question: str
 
 class AdvisorRequest(BaseModel):
-    question: str    
+    question: str
+
+class HRQuestion(BaseModel):
+    question: str        
