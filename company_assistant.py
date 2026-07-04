@@ -1,40 +1,45 @@
-import services
-from rag_demo.rag_service import ask_hr_policy
-from llm_service import ask_llm
+from concurrent.futures import ThreadPoolExecutor
 
-def company_assistant(question):
-    question_lower = question.lower()
-    context =""
-    
-    if ("employee" in question_lower
-        or "people" in question_lower
-        or "workforce" in question_lower):
-        total_employees = services.count_employees()
-        context += (f"Total employees: {total_employees}\n")
-    if "leave" in question_lower:
-        leave_policy = ask_hr_policy(question)
-        context += (f"Leave policy: {leave_policy}\n")
-    if "experience" in question_lower:
-        average_experience = services.get_average_experience()
-        context += (f"Average experience: {average_experience}\n")
-    if "most experienced" in question_lower:
-        most_experienced = (   services.get_most_experienced_employee() )
-        context += (
-        f"Most experienced employee: "
-        f"{most_experienced['name']} "
-        f"with {most_experienced['experience']} years\n"
-        )
+from planner.planner import create_plan
+from sql_agent.agent import sql_agent
+from rag_agent import rag_agent
+from tool_agent import tool_agent
+from app.ai.response_synthesizer import synthesize
 
-    prompt = f"""
-Answer using the information below.
-{context}
-Question:
-{question}
-"""
-    return ask_llm(prompt)
 
-print(
-    company_assistant(
+AGENT_MAP = {
+    "sql": sql_agent,
+    "rag": rag_agent,
+    "tool": tool_agent,
+}
+
+
+def _run_agent(step):
+    agent = AGENT_MAP.get(step.agent)
+    if not agent:
+        return f"Unknown agent '{step.agent}' for question: {step.question}"
+
+    try:
+        return agent.answer_question(step.question)
+    except Exception as exc:
+        return f"Agent '{step.agent}' failed: {exc}"
+
+
+def company_assistant(question: str):
+    plan = create_plan(question)
+
+    if not plan.steps:
+        return "No plan steps were generated."
+
+    max_workers = min(len(plan.steps), len(AGENT_MAP))
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        responses = list(executor.map(_run_agent, plan.steps))
+
+    return synthesize(question, responses)
+
+
+if __name__ == "__main__":
+    answer = company_assistant(
         "How many employees do we have and what is the leave policy?"
     )
-)
+    print(answer)

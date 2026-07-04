@@ -1,22 +1,28 @@
-from openai import OpenAI
-from dotenv import load_dotenv
-import os
+import logging
 import services
-#services.py is a module that contains functions to interact with the employee data stored 
+from app.ai.openai_client import client
+from config.settings import MODEL_NAME
+
+# services.py is a module that contains functions to interact with the employee data stored
 # in a CSV file. It provides functions to get employee data, save new employees, count employees,
-#  and get senior employee count. The llm_service.py module uses these functions to provide 
-# higher-level functionalities like asking questions to the LLM and providing 
+# and get senior employee count. The llm_service.py module uses these functions to provide
+# higher-level functionalities like asking questions to the LLM and providing
 # employee-related advice based on the data.
 
-load_dotenv()
-client = OpenAI( api_key=os.getenv("OPENAI_API_KEY") )
+logger = logging.getLogger(__name__)
+
+
+def generate(prompt: str, model: str = MODEL_NAME) -> str:
+    response = client.responses.create(model=model, input=prompt)
+    return response.output_text
+
 
 def ask_llm(question: str) -> str:
-    response = client.responses.create(model="gpt-5",input= question)
+    response = client.responses.create(model=MODEL_NAME, input=question)
     return response.output_text
 
 def employee_advisor(question: str) -> str:
-    print("CALLING GPT")
+    logger.info("CALLING GPT")
     employees = services.get_employee_data()
     prompt = f"""
 You are an HR assistant.
@@ -33,28 +39,28 @@ Answer the following question:
 
 {question}
 """
-    response = client.responses.create(  model="gpt-5", input=prompt)
+    response = client.responses.create(model=MODEL_NAME, input=prompt)
     return response.output_text
 
 def employee_agent(question: str):
     question_lower = question.lower()
     if "how many senior employees" in question_lower:
-        print("TOOL USED: get_senior_employee_count")
+        logger.info("TOOL USED: get_senior_employee_count")
         result = services.get_senior_employee_count()
         return f"There are {result} senior employees."
     if "how many" in question_lower and "employees" in question_lower:
-        print("TOOL USED: count_employees")
+        logger.info("TOOL USED: count_employees")
         result = services.count_employees()
         return f"There are {result} employees."
     if "most experienced" in question_lower:
-        print("TOOL USED: get_most_experienced_employee")
+        logger.info("TOOL USED: get_most_experienced_employee")
         emp = services.get_most_experienced_employee()
         return (
             f"{emp['name']} is the most experienced employee "
             f"with {emp['experience']} years."
         )
-    print("TOOL USED: GPT FALLBACK")
-    return employee_advisor(question)    
+    logger.info("TOOL USED: GPT FALLBACK")
+    return employee_advisor(question)
 
 
 tools = [
@@ -83,13 +89,13 @@ tools = [
 
 def employee_agent_v2(question: str):
     response = client.responses.create(
-        model="gpt-5",
+        model=MODEL_NAME,
         input=question,
         tools=tools
     )
     tool_call = response.output[1]
-    print("Tool selected:", tool_call.name)
-    print(tool_call.name)
+    logger.info("Tool selected: %s", tool_call.name)
+    logger.info(tool_call.name)
     if tool_call.name == "count_employees":
        result = services.count_employees()
        return f"There are {result} employees."
